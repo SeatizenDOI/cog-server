@@ -1,38 +1,36 @@
-# How to produce the ortho tiles.
+# How to produce the ortho cogs file.
 
 
-## Create tiles for UAV and ASV orthophoto
+## Transform the raw raster in web optimized cog.
 
 Gather all your uav ortho in one folder.
 
-Apply the script `0.apply_tif_gdal_uav.sh` and change the `RASTER_FOLDER` path:
+Apply the script `0.convert_tif_to_cog.sh` and change the `RASTER_FOLDER` path:
 ```bash
 #!/bin/bash
 
-TILES_FOLDER=/app/output/tiles
-mkdir -p $TILES_FOLDER
+source /home/bioeos/miniconda3/etc/profile.d/conda.sh
+conda activate titiler_env
 
-RASTER_FOLDER=/app
+ORTHO_COG_FOLDER=./data/unsorted_cogs
+RASTER_FOLDER=/media/bioeos/E/drone/drone_ortho_tif
+
+rm -rf $ORTHO_COG_FOLDER
+mkdir -p $ORTHO_COG_FOLDER
 
 for filename in $RASTER_FOLDER/*.tif;
 do
     echo $filename;
     BASENAME=$(basename "$filename" .tif)
 
-    if [ ! -f $filename ]; then
-        echo "File not found: ${filename}"
-        continue
-    fi
+    ORTHO_COG="${ORTHO_COG_FOLDER}/${BASENAME}_cog.tif"
+    rio cogeo create \
+        --cog-profile webp \
+        --web-optimized \
+        --overview-level 8 \
+        $filename $ORTHO_COG
 
-    TILE_OUTPUT_FOLDER="${TILES_FOLDER}/tiles_${BASENAME}"
-
-    if [[ "$BASENAME" == *UAV* ]]; then
-        gdal2tiles --processes=22 --no-kml -e -x -n -z 10-25 $filename $TILE_OUTPUT_FOLDER
-    else
-        gdal2tiles --processes=22 --no-kml -e -x -n -z 21-28 $filename $TILE_OUTPUT_FOLDER
-    fi
 done
-
 ```
 
 If the script doesn't launch, you can use a docker image like : 
@@ -43,6 +41,6 @@ But you need to set `RASTER_FOLDER` like `RASTER_FOLDER=/app`
 
 
 
-## Merge tiles_folder.
+## Sort the cogs file by year.
 
-Execute the script `python 2.merge_tiles_folder.py`. 
+Use the notebook `1.move_cog_file.ipynb` 
