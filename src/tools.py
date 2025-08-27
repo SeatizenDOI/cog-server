@@ -1,6 +1,5 @@
 import io
 import functools
-import numpy as np
 from PIL import Image
 from pathlib import Path
 

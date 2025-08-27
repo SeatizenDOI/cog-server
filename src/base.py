@@ -1,21 +1,16 @@
-import io
-import functools
-import numpy as np
-from PIL import Image
-from pathlib import Path
-import  numpy.ma as ma
-from rio_tiler.models import ImageData
-from rio_tiler.io import COGReader
-
 import logging
-import rasterio
 import pyqtree
-from rasterio.warp import transform_bounds
-from morecantile.commons import BoundingBox
-
+import numpy as np
+from pathlib import Path
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from morecantile.commons import BoundingBox
 
+from rio_tiler.io import COGReader
+from rio_tiler.models import ImageData
+
+import rasterio
+from rasterio.warp import transform_bounds
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,13 +27,14 @@ class BaseManager(ABC):
 
     @property
     @abstractmethod
-    def spindex(self):
+    def spindex(self) -> pyqtree.Index:
         """Subclasses must define this attribute or property."""
         pass
         
+
     @property
     @abstractmethod
-    def readers(self):
+    def readers(self) -> dict[Path, COGReader]:
         """Subclasses must define this attribute or property."""
         pass
 
@@ -75,30 +71,30 @@ class BaseManager(ABC):
 
         return spindex
 
-    def get_merge_tiles(self, tiles: list[ImageData]):
+
+    def get_merge_tiles(self, tiles: list[ImageData]) -> ImageData:
+        """ Merge a list of tile by the first algo. """
         reference_tile = tiles[0]
-        merged_array = reference_tile.array.copy() 
-        merged_mask = reference_tile.mask.copy()
+        merged_array = reference_tile.data
 
         for sub_tile in tiles[1:]:
 
-            tile_array = sub_tile.array.copy()
-            tile_mask = sub_tile.mask.copy()
+            tile_array = sub_tile.data
 
             for i in range(3):
-                merged_array[i, ...] = np.where(merged_mask != 0, merged_array[i, ...], tile_array[i, ...])
+                merged_array[i, ...] = np.where(merged_array[3, ...] != 0, merged_array[i, ...], tile_array[i, ...])
                                                     
-            merged_mask = np.where(merged_mask != 0, merged_mask, tile_mask)
+            merged_array[3, ...] = np.where(merged_array[3, ...] != 0, merged_array[3, ...], tile_array[3, ...])
 
-        im = ImageData(
-            array=ma.masked_array(merged_array, mask=~np.repeat(merged_mask.reshape(1, 256, 256), 3, axis=0)),
+        return ImageData(
+            array=merged_array,
             crs=reference_tile.crs,
             bounds=reference_tile.bounds,
         )
-        return im
 
 
     def load_readers(self, list_cogs_path: list[Path]) -> dict[Path, COGReader]:
+        """ Create a dict of readers map by the path of the cog."""
         readers = {}
         for file in list_cogs_path:
             try:
@@ -110,15 +106,15 @@ class BaseManager(ABC):
 
 
     def get_tile(self, p: ParametersCOG) -> ImageData | None:
-        
-        list_cogs_intersect = self.spindex.intersect((
+        """ Get the tile at the given coordinate. """
+        list_cogs_intersect = sorted(self.spindex.intersect((
             p.bb.left, p.bb.bottom, p.bb.right, p.bb.top
-        ))
+        )))
 
         if len(list_cogs_intersect) == 0:
             return None
 
-        tiles = [self.readers.get(file.name).tile(p.x, p.y, p.z) for file in list_cogs_intersect]
+        tiles = [self.readers.get(file.name).tile(p.x, p.y, p.z, indexes=(1,2,3,4)) for file in list_cogs_intersect]
         
         tile = tiles[0] if len(tiles) == 1 else self.get_merge_tiles(tiles)
 

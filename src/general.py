@@ -1,14 +1,5 @@
-import io
-import functools
-import numpy as np
-from PIL import Image
 from pathlib import Path
 from rio_tiler.models import ImageData
-import rasterio
-import pyqtree
-from rasterio.warp import transform_bounds
-
-from morecantile.commons import BoundingBox
 
 from .base import ParametersCOG
 from .bathy import BathyManager
@@ -25,12 +16,11 @@ class ManagerType(Enum):
 
 class GeneralManager:
 
-    def __init__(self, data_path: Path):
+    def __init__(self, data_path: Path) -> None:
         
         self.bathy_manager = BathyManager(Path(data_path, ManagerType.BATHY.value))
         self.ortho_manager = OrthoManager(Path(data_path, ManagerType.ORTHO.value))
         self.pred_manager = PredManager(Path(data_path, ManagerType.PRED.value))
-
 
 
     def get_tile(self, collection_type: str, year: str, params: ParametersCOG) -> ImageData | None:
@@ -45,6 +35,11 @@ class GeneralManager:
 
         return tile
     
+
     def get_depth(self, lon: float, lat: float, year: str) -> float | None:
         return self.bathy_manager.get_depth(lon, lat, year)
-         
+        
+
+    def get_prediction(self, lon: float, lat: float, year: str) -> str | None:
+        return self.pred_manager.get_prediction(lon, lat, year)
+        

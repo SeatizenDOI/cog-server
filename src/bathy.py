@@ -1,15 +1,14 @@
 import logging
+import pyqtree
 from pathlib import Path
 from rio_tiler.io import COGReader
-from morecantile.commons import BoundingBox
 from rio_tiler.models import ImageData
-import pyqtree
+from morecantile.commons import BoundingBox
+
 import rasterio
 from rasterio.warp import transform
 
-
 from .base import BaseManager
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,6 +35,7 @@ class BathyCogYear(BaseManager):
 
 
     def match_color_depth_file(self) -> tuple[list, dict[Path, Path]]:
+        """ Get the list of usable tif and map the color tif with the data tif. """
         if not self.bathy_cogs_path.exists():
             raise FileNotFoundError("Cannot access to bathy data, folder not found")
 
@@ -53,8 +53,9 @@ class BathyCogYear(BaseManager):
         
         return list_color_cogs, bathy_file_by_color
 
+
     def get_depth(self, lon: float, lat: float) -> float | None:
-        
+        """ Return the depth for a given tif at a given location. """
         list_cogs = self.spindex.intersect((lon, lat, lon, lat))
         if len(list_cogs) == 0:
             return None
@@ -75,12 +76,10 @@ class BathyCogYear(BaseManager):
         return depth
 
 
-
 class BathyManager:
-    def __init__(self, bathy_data_path: Path):
-        
-        self.bathy_data_path = bathy_data_path
 
+    def __init__(self, bathy_data_path: Path) -> None:
+        self.bathy_data_path = bathy_data_path
         self.bathy_cog_by_year = self.load_bathy_cog()
 
 
@@ -93,6 +92,7 @@ class BathyManager:
         
         return bathy_cog_by_year
     
+
     def get_tile(self, year: str, bb: BoundingBox) -> ImageData | None:
 
         bathy_year_manager = self.bathy_cog_by_year.get(year, None)
@@ -104,6 +104,7 @@ class BathyManager:
             tile = bathy_year_manager.get_tile(bb)
 
         return tile
+
 
     def get_depth(self, lon: float, lat: float, year: str) -> float | None:
 

@@ -1,10 +1,9 @@
 import logging
+import pyqtree
 from pathlib import Path
 from rio_tiler.io import COGReader
-from morecantile.commons import BoundingBox
 from rio_tiler.models import ImageData
-import pyqtree
-
+from morecantile.commons import BoundingBox
 
 from .base import BaseManager, ParametersCOG
 
@@ -32,12 +31,13 @@ class OrthoCogYear(BaseManager):
         return self._readers
 
 
-    def get_ortho_files(self) -> list:
+    def get_ortho_files(self) -> list[Path]:
         if not self.ortho_cogs_path.exists():
             raise FileNotFoundError("Cannot access to ortho data, folder not found")
         
         return [file for file in self.ortho_cogs_path.iterdir() if file.suffix.lower() == ".tif"]
     
+
     def get_tile(self, p: ParametersCOG) -> ImageData | None:
         """ Override get tile to sorted ASV before UAV. """
 
@@ -54,7 +54,7 @@ class OrthoCogYear(BaseManager):
         else:
             list_cogs_intersect = sorted([a for a in list_cogs_intersect if "ASV" not in a.name])
 
-        tiles = [self.readers.get(file.name).tile(p.x, p.y, p.z) for file in list_cogs_intersect]
+        tiles = [self.readers.get(file.name).tile(p.x, p.y, p.z, indexes=(1,2,3,4)) for file in list_cogs_intersect]
         
         tile = tiles[0] if len(tiles) == 1 else self.get_merge_tiles(tiles)
 
@@ -64,10 +64,9 @@ class OrthoCogYear(BaseManager):
 
 class OrthoManager:
     def __init__(self, ortho_data_path: Path):
-        
         self.ortho_data_path = ortho_data_path
-
         self.ortho_cog_by_year = self.load_ortho_cog()
+
 
     def load_ortho_cog(self) -> dict[str, OrthoCogYear]:
 

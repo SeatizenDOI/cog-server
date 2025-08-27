@@ -1,13 +1,22 @@
 import logging
+import pyqtree
 from pathlib import Path
 from rio_tiler.io import COGReader
-from morecantile.commons import BoundingBox
 from rio_tiler.models import ImageData
-import pyqtree
-import numpy as np
-import numpy.ma as ma
+from morecantile.commons import BoundingBox
 
-from .base import BaseManager, ParametersCOG
+import rasterio
+from rasterio.warp import transform
+
+from .base import BaseManager
+
+LABEL_TEXT_MATCHING = {
+    "1": "Acropora Branching", 
+    "2": "Acropora Tabular",
+    "3": "Non-acropora Massive",
+    "4": "Other Corals",
+    "5": "Sand",
+}
 
 
 logging.basicConfig(level=logging.INFO)
@@ -17,8 +26,8 @@ class PredCogYear(BaseManager):
 
     def __init__(self, pred_cogs_path: Path) -> None:
         self.pred_cogs_path = pred_cogs_path
-        self.list_pred_cogs = self.get_pred_files()
-        
+        self.list_pred_cogs, self.pred_file_by_color = self.match_color_pred_file()
+
         self._readers = self.load_readers(self.list_pred_cogs)
         self._spindex = self.create_index(self.list_pred_cogs)
   
@@ -33,20 +42,55 @@ class PredCogYear(BaseManager):
         return self._readers
 
 
-    def get_pred_files(self) -> list:
+    def match_color_pred_file(self) -> tuple[list, dict[Path, Path]]:
         if not self.pred_cogs_path.exists():
             raise FileNotFoundError("Cannot access to predictions data, folder not found")
         
-        return [file for file in self.pred_cogs_path.iterdir() if file.suffix.lower() == ".tif"]
+        list_color_cogs, pred_file_by_color = [], {}
+        for file in self.pred_cogs_path.iterdir():
+            if file.suffix.lower() != ".tif": continue
+            if "color" not in file.name: continue
+
+            file_pred = Path(file.parent, file.name.replace("color", "preddata"))
+
+            if not file_pred.exists():
+                raise FileNotFoundError(f"File {file_pred} not found for {file}")
+            
+            list_color_cogs.append(file)
+            pred_file_by_color[file] = file_pred
+        
+        return list_color_cogs, pred_file_by_color
+        
+
+    def get_prediction(self, lon: float, lat: float) -> str | None:
+
+        list_cogs = self.spindex.intersect((lon, lat, lon, lat))
+        if len(list_cogs) == 0:
+            return None
+        
+        pred_path = self.pred_file_by_color.get(list_cogs[0], None)
+        if pred_path == None or not pred_path.exists():
+            return None
+        
+        with rasterio.open(pred_path) as src:
+            raster_crs = src.crs
+
+            # Transform lon/lat (EPSG:4326) into raster CRS
+            xs, ys = transform("EPSG:4326", raster_crs, [lon], [lat])
+            xs, ys = xs[0], ys[0]
+
+            val = list(src.sample([(xs, ys)]))[0][0]
+
+        return LABEL_TEXT_MATCHING.get(str(val), None)
 
 
 
 class PredManager:
-    def __init__(self, pred_data_path: Path):
-        
-        self.pred_data_path = pred_data_path
 
+    def __init__(self, pred_data_path: Path):
+        self.pred_data_path = pred_data_path
         self.pred_cog_by_year = self.load_pred_cog()
+
 
     def load_pred_cog(self) -> dict[str, PredCogYear]:
 
@@ -70,5 +114,18 @@ class PredManager:
 
         return tile
     
+    
+    def get_prediction(self, lon: float, lat:float, year: str) -> str | None:
+
+        pred_year_manager = self.pred_cog_by_year.get(year, None)
+
+        pred = None
+        if pred_year_manager == None:
+            logger.error(f"Bathy for year {year} not found.")
+        else:
+            pred = pred_year_manager.get_prediction(lon, lat)
+
+        return pred
+
 
 
