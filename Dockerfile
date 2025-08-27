@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.12.7-slim
+FROM python:3.13.5-slim
 
 # Add local directory and change permission.
 COPY . /app
@@ -9,13 +9,16 @@ WORKDIR /app
 
 # Install lib.
 RUN apt-get update && \
+    apt-get install libexpat1 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir \
-    flask==3.0.3 \
-    gunicorn==23.0.0 \
-    pillow==11.0.0
+    fastapi==0.116.1 \
+    rio-tiler==7.8.1 \
+    uvicorn==0.35.0 \
+    pyqtree==1.0.0 \
+    pillow==11.3.0
 
 EXPOSE 5004
 
 # Define the entrypoint script to be executed.
-ENTRYPOINT ["gunicorn", "--preload", "--workers", "4", "--threads", "4", "-t", "1000", "-b", "0.0.0.0:5004", "main:app"] 
+ENTRYPOINT ["uvicorn", "main:app", "--workers", "4", "--port", "5004", "--host", "0.0.0.0", "--log-level", "info"]

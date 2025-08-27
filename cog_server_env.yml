@@ -1,0 +1,14 @@
+name: cog_server_env
+channels:
+  - defaults
+dependencies:
+  - python=3.13
+  - pip=25.1
+  - pip:
+    - fastapi==0.116.1
+    - rio-tiler==7.8.1
+    - uvicorn==0.35.0
+    - pyqtree==1.0.0
+    - pillow==11.3.0
+    - pandas==2.3.2
+    - scikit-learn==1.7.1

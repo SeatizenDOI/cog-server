@@ -1,4 +1,4 @@
-name: Deploy tms-server on release
+name: Deploy cog-server on release
 
 on:
   release:
@@ -21,8 +21,8 @@ jobs:
     - name: Deploy to OVH server
       run: |
         ssh -tt -o StrictHostKeyChecking=no debian@ifremer.re << EOF
-          docker stop tms-server || true && docker image rm seatizendoi/tms-server:latest || true && \
-          docker run -d --rm -v /home/debian/villien/tiles/:/app/tiles --name tms-server -p 5004:5004 seatizendoi/tms-server:latest > /dev/null 2>&1
+          docker container stop cog-server || true && docker image rm seatizendoi/cog-server:latest || true && \
+          docker run -d --rm -v /home/debian/villien/tiles/:/app/tiles --name cog-server -p 5004:5004 seatizendoi/cog-server:latest > /dev/null 2>&1
           exit
         EOF
       

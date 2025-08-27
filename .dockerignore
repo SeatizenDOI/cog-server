@@ -1,12 +1,10 @@
 __pycache__
-xml
 utils
 *.html
-tiles
 LICENCE
 *.md
-bathy
-ortho
-pred
+data
+tools
+.git
 assets
 .github

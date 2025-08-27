@@ -22,10 +22,10 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - name: Build and push tms-server to dockerhub
+    - name: Build and push cog-server to dockerhub
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
         push: true
-        tags: seatizendoi/tms-server:latest
+        tags: seatizendoi/cog-server:latest

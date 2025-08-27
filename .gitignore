@@ -1,7 +1,2 @@
 __pycache__
-xml
-utils/merge_all_session.py
-utils/remove_useless_tiles.py
-utils/utils.py
-tiles
 data
