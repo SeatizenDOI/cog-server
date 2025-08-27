@@ -3,8 +3,5 @@ xml
 utils/merge_all_session.py
 utils/remove_useless_tiles.py
 utils/utils.py
-*.html
 tiles
-bathy/data/
-ortho/data/
-pred/data/
+data

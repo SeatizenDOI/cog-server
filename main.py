@@ -1,84 +1,82 @@
-from PIL import Image
+import logging
+import functools
 from pathlib import Path
-from flask import Flask, request, send_file
+from fastapi import FastAPI, Response, Query
+from starlette.middleware.cors import CORSMiddleware
+from rio_tiler.profiles import img_profiles
+import morecantile
+import numpy as np
 
-app = Flask(__name__)
+from src.general import GeneralManager
+from src.base import ParametersCOG
+from src.tools import retrieve_transparent_image
 
-# Static directory where your map tiles are stored
-TILE_DIRECTORY = './tiles/'
-TRANSPARENT_TILE = Path(TILE_DIRECTORY, "transparent.png")
+GLOBAL_DATA_PATH = Path("./data")
 
-@app.route('/wmts', methods=['GET'])
-def wmts_service():
-    """
-    Main entry point for WMTS service, handles GetTile.
-    """
-    service_request = request.args.get('request')
-    if service_request == 'GetTile':
-        return get_tile()
-    else:
-        return "Invalid WMTS request", 400
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+app = FastAPI(title="Auto-Discovery Multi-COG Tile Server")
 
-@app.route('/legend', methods=['GET'])
-def legend_service():
-    """
-    Main entry point for legend service.
-    Example URL: /legend?layer=bathy
-    """
-    layer = request.args.get('layer')
-
-    if layer not in ["bathy", "predictions"]:
-        return "Invalid legend request", 400
-
-    legend_file = Path(TILE_DIRECTORY, layer, "gradient.png")
-
-    if not legend_file.exists() or not legend_file.is_file():
-        return "Tile not found", 404
-
-    return send_file(legend_file, mimetype='image/png')
-
-@app.errorhandler(404)
-def page_not_found(e):
-    # your processing here
-    print(e, request)
-    return "Request not found or not handled", 404
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (for development - be more specific in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-def get_tile():
-    """
-    Serves the requested tile (based on Layer, TileMatrix, TileRow, TileCol).
-    Example URL: /wmts?request=GetTile&layer=ortho&tilematrix={z}&tilerow={x}&tilecol={y}
-    Example URL: /wmts?request=GetTile&layer=ortho&year=2023&tilematrix={z}&tilerow={x}&tilecol={y}
-    Example URL: /wmts?request=GetTile&layer=bathy&tilematrix={z}&tilerow={x}&tilecol={y}
-    Example URL: /wmts?request=GetTile&layer=predictions&tilematrix={z}&tilerow={x}&tilecol={y}
-    """
-
-    layer = request.args.get('layer')
-    year = request.args.get('year', 'all') # If year is not in arguments, return all tif merged.
-    tile_matrix = request.args.get('tilematrix')
-    tile_row = request.args.get('tilerow')
-    tile_col = request.args.get('tilecol')
-
-    tile_col = str(2**(int(tile_matrix)) - int(tile_col) -1) # TMS tiles are flip compared with XYZ tiles
-
-    if not (tile_matrix and tile_row and tile_col):
-        return "Missing parameters", 400
-
-    tile_path = Path(TILE_DIRECTORY, layer, year, tile_matrix, tile_row, f"{tile_col}.png")
-    if tile_path.exists():
-        return send_file(tile_path, mimetype='image/png')
-    else:
-        if not TRANSPARENT_TILE.exists():
-            generate_transparent_tile()
-        return send_file(TRANSPARENT_TILE, mimetype='image/png')
+# Setup bathy
+general_manager = GeneralManager(GLOBAL_DATA_PATH)
 
 
-def generate_transparent_tile():
-    img = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    img.save(TRANSPARENT_TILE, format="PNG")
+@app.get("/{collection_name}/{year}/{z}/{x}/{y}.png")
+async def serve_collection_tile(collection_name: str, year: str, z: int, x: int, y: int, asv: bool = True):
+    """Serve tiles from a predefined COG collection"""
+
+    try:
+        # Get bounding box from x, y, z
+        tms = morecantile.tms.get("WebMercatorQuad")  # default TiTiler TMS
+        bb = tms.bounds(x, y, z)
+        params = ParametersCOG(x, y, z, bb, with_asv=asv)
 
 
-if __name__ == '__main__':
-    # Run the Flask server
-    app.run(port=5004, debug=True)
+        tile = general_manager.get_tile(collection_name, year, params)
+
+        if tile == None:
+            png_data = retrieve_transparent_image(Path(GLOBAL_DATA_PATH, "transparent.png")).getvalue()
+        else:
+            png_data = tile.render(img_format="PNG", **img_profiles.get("png"))
+        
+        return Response(
+            png_data,
+            media_type="image/png",
+            headers={
+                # "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
+                "Access-Control-Allow-Origin": "*"  # Allow CORS
+            }
+        ) 
+
+        
+    except Exception as e:
+        logger.error(f"Error serving tile {collection_name}/{z}/{x}/{y}: {e}")
+
+
+
+@app.get("/depth")
+async def get_depth(lon: float = Query(...), lat: float = Query(...), year: str = Query(...)):
+    """Return depth at clicked point."""
+
+    try:
+        depth_value = general_manager.get_depth(lon, lat, year)
+
+        return {
+            "lon": lon, 
+            "lat": lat, 
+            "depth": None if depth_value == None or np.isnan(depth_value) else float(depth_value)
+        }
+    except Exception as e:
+        logger.error(f"Get POint : {e}")
