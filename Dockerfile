@@ -16,7 +16,8 @@ RUN apt-get update && \
     rio-tiler==7.8.1 \
     uvicorn==0.35.0 \
     pyqtree==1.0.0 \
-    pillow==11.3.0
+    pillow==11.3.0 \
+    rio-cogeo==5.4.2
 
 EXPOSE 5004
 

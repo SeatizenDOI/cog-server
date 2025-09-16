@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /home/bioeos/miniconda3/etc/profile.d/conda.sh
-conda activate titiler_env
+conda activate cog_server_env
 
 BATHY_FOLDER=./data/bathy_cogs
 MERGED_RASTER_FOLDER=./data/merged_rasters

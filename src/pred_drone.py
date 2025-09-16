@@ -22,7 +22,7 @@ LABEL_TEXT_MATCHING = {
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class PredCogYear(BaseManager):
+class PredDroneCogYear(BaseManager):
 
     def __init__(self, pred_cogs_path: Path) -> None:
         self.pred_cogs_path = pred_cogs_path
@@ -85,19 +85,19 @@ class PredCogYear(BaseManager):
 
 
 
-class PredManager:
+class PredDroneManager:
 
     def __init__(self, pred_data_path: Path):
         self.pred_data_path = pred_data_path
         self.pred_cog_by_year = self.load_pred_cog()
 
 
-    def load_pred_cog(self) -> dict[str, PredCogYear]:
+    def load_pred_cog(self) -> dict[str, PredDroneCogYear]:
 
         if not self.pred_data_path.exists():
             raise FileNotFoundError("Cannot access to pred data, folder not found")
 
-        pred_cog_by_year = {byp.name:PredCogYear(byp) for byp in self.pred_data_path.iterdir()}
+        pred_cog_by_year = {pyp.name:PredDroneCogYear(pyp) for pyp in self.pred_data_path.iterdir()}
         
         return pred_cog_by_year
     
@@ -121,7 +121,7 @@ class PredManager:
 
         pred = None
         if pred_year_manager == None:
-            logger.error(f"Bathy for year {year} not found.")
+            logger.error(f"Pred for year {year} not found.")
         else:
             pred = pred_year_manager.get_prediction(lon, lat)
 

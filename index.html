@@ -25,7 +25,7 @@
     const year = 2025;
 
     // Initialize the map and set its view
-    const map = L.map('map', {maxZoom: 28}).setView([-21.085198, 55.222047], 13); // Paris coordinates
+    const map = L.map('map', {maxZoom: 28}).setView([-21.170876, 55.286604], 18); // Paris coordinates
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -33,31 +33,39 @@
       maxZoom: 28
     }).addTo(map);
 
-  const tileLayer = L.tileLayer(`http://localhost:8000/pred/${year}/{z}/{x}/{y}.png`, {
-    tileSize: 256,
-    attribution: 'COG Tiles',
-    maxZoom: 28
-  }).addTo(map);
+    const tileLayer = L.tileLayer(`http://localhost:8000/ortho/2017/{z}/{x}/{y}.png`, {
+      tileSize: 256,
+      attribution: 'COG Tiles',
+      maxZoom: 28
+    }).addTo(map);
 
-  // map.on('click', async (e) => {
-  //   const { lat, lng } = e.latlng;
-  //   const response = await fetch(`http://localhost:8000/depth?lon=${lng}&lat=${lat}&year=${year}`);
-  //   const data = await response.json();
+  //   const tileLayer2 = L.tileLayer(`http://localhost:8000/bathy/2025/{z}/{x}/{y}.png`, {
+  //   tileSize: 256,
+  //   attribution: 'COG Tiles',
+  //   maxZoom: 28
+  // }).addTo(map);
 
-  //   if (data.depth === null) { return; }
 
-  //   document.getElementById('info').innerHTML = `Depth: ${data.depth.toFixed(2)} m`;
-  // });
 
   map.on('click', async (e) => {
     const { lat, lng } = e.latlng;
-    const response = await fetch(`http://localhost:8000/prediction?lon=${lng}&lat=${lat}&year=${year}`);
+    const response = await fetch(`http://localhost:8000/depth?lon=${lng}&lat=${lat}&years=2025&years=2023`);
     const data = await response.json();
 
-    if (data.pred === null) { return; }
+    if (data.depth === null) { return; }
 
-    document.getElementById('info').innerHTML = `Pred: ${data.pred}`;
+    document.getElementById('info').innerHTML = `Depth: ${data.depth.toFixed(2)} m`;
   });
+
+  // map.on('click', async (e) => {
+  //   const { lat, lng } = e.latlng;
+  //   const response = await fetch(`http://localhost:8000/prediction?lon=${lng}&lat=${lat}&year=${year}`);
+  //   const data = await response.json();
+
+  //   if (data.pred === null) { return; }
+
+  //   document.getElementById('info').innerHTML = `Pred: ${data.pred}`;
+  // });
 </script>
 </body>
 </html>

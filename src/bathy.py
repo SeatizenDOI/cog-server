@@ -1,5 +1,6 @@
 import logging
 import pyqtree
+import numpy as np
 from pathlib import Path
 from rio_tiler.io import COGReader
 from rio_tiler.models import ImageData
@@ -73,7 +74,7 @@ class BathyCogYear(BaseManager):
 
             depth = list(src.sample([(xs, ys)]))[0][0]
 
-        return depth
+        return None if np.isnan(depth) else depth
 
 
 class BathyManager:

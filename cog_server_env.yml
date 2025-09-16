@@ -12,3 +12,6 @@ dependencies:
     - pillow==11.3.0
     - pandas==2.3.2
     - scikit-learn==1.7.1
+    - rio-cogeo==5.4.2
+    - ipykernel==6.30.1
+    - tqdm==4.67.1
