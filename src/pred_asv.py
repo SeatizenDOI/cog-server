@@ -1,3 +1,4 @@
+import json
 import logging
 import pyqtree
 from pathlib import Path
@@ -95,6 +96,7 @@ class PredASVManager:
         self.pred_data_path = pred_data_path
         self.pred_cog_by_year = self.load_pred_cog()
         self.species = self.get_species()
+        self.color_asv_pred_by_specie = self.get_color_pred_asv_by_specie()
 
 
     def load_pred_cog(self) -> dict[str, PredASVCogYear]:
@@ -102,7 +104,7 @@ class PredASVManager:
         if not self.pred_data_path.exists():
             raise FileNotFoundError("Cannot access to pred data, folder not found")
 
-        pred_cog_by_year = {byp.name:PredASVCogYear(byp) for byp in self.pred_data_path.iterdir()}
+        pred_cog_by_year = {byp.name:PredASVCogYear(byp) for byp in self.pred_data_path.iterdir() if byp.is_dir()}
         
         return pred_cog_by_year
     
@@ -121,8 +123,11 @@ class PredASVManager:
     
 
     def get_species(self) -> list[str]:
+        """ Extract all species. """
         species = set()
         for byp in self.pred_data_path.iterdir():
+            if not byp.is_dir(): continue
+
             for raster in byp.iterdir():
                 extracted_part = raster.name.split("_")
                 specie = "_".join(extracted_part[2:len(extracted_part)-3])
@@ -130,3 +135,13 @@ class PredASVManager:
             break
 
         return sorted(list(species))
+    
+
+    def get_color_pred_asv_by_specie(self) -> dict:
+        color_path = Path(self.pred_data_path, "color_asv_pred_by_specie.json")
+        if not color_path.exists(): raise FileNotFoundError("Cannot access to pred data color, file not found")
+        
+        with open(color_path, "r") as f:
+            data = json.load(f)
+
+        return data

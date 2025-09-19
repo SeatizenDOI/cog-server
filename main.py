@@ -176,10 +176,11 @@ async def get_layers():
 
 @app.get("/filters-asv")
 async def get_filters():
+    asv_color =  general_manager.pred_asv_manager.get_color_pred_asv_by_specie()
 
     filters = {
-        "species": [s for s in general_manager.pred_asv_manager.species], 
-        "years": [y.name for y in general_manager.pred_asv_manager.pred_data_path.iterdir()]
+        "species": [{"name":s, "color": '#%02x%02x%02x' % tuple(asv_color.get(s, [127, 127, 127]))}  for s in general_manager.pred_asv_manager.species], 
+        "years": sorted([y.name for y in general_manager.pred_asv_manager.pred_data_path.iterdir() if y.is_dir()])
     }
 
     return filters

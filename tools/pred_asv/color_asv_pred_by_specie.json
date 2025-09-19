@@ -1,0 +1,157 @@
+{
+    "ACROPORE_BRANCHED": [
+        100,
+        245,
+        208
+    ],
+    "ACROPORE_DIGITISED": [
+        157,
+        200,
+        191
+    ],
+    "ACROPORE_SUB_MASSIVE": [
+        232,
+        129,
+        117
+    ],
+    "ACROPORE_TABULAR": [
+        127,
+        163,
+        104
+    ],
+    "ALGAE_ASSEMBLY": [
+        171,
+        217,
+        172
+    ],
+    "ALGAE_DRAWN_UP": [
+        168,
+        138,
+        118
+    ],
+    "ALGAE_LIMESTONE": [
+        238,
+        108,
+        144
+    ],
+    "ALGAE_SODDING": [
+        213,
+        175,
+        239
+    ],
+    "ATRA/LEUCOSPILOTA": [
+        218,
+        226,
+        129
+    ],
+    "BLEACHED_CORAL": [
+        207,
+        226,
+        236
+    ],
+    "BLURRED": [
+        150,
+        162,
+        174
+    ],
+    "DEAD_CORAL": [
+        137,
+        111,
+        185
+    ],
+    "FISH": [
+        193,
+        128,
+        158
+    ],
+    "HOMO_SAPIENS": [
+        202,
+        109,
+        247
+    ],
+    "HUMAN_OBJECT": [
+        203,
+        158,
+        107
+    ],
+    "LIVING_CORAL": [
+        167,
+        220,
+        135
+    ],
+    "MILLEPORE": [
+        224,
+        212,
+        168
+    ],
+    "NO_ACROPORE_ENCRUSTING": [
+        217,
+        202,
+        234
+    ],
+    "NO_ACROPORE_FOLIACEOUS": [
+        223,
+        166,
+        169
+    ],
+    "NO_ACROPORE_MASSIVE": [
+        116,
+        177,
+        186
+    ],
+    "NO_ACROPORE_SOLITARY": [
+        142,
+        226,
+        106
+    ],
+    "NO_ACROPORE_SUB_MASSIVE": [
+        107,
+        182,
+        144
+    ],
+    "ROCK": [
+        239,
+        104,
+        247
+    ],
+    "SAND": [
+        174,
+        147,
+        113
+    ],
+    "RUBBLE": [
+        235,
+        103,
+        178
+    ],
+    "SEA_CUCUMBER": [
+        237,
+        187,
+        220
+    ],
+    "SEA_URCHINS": [
+        156,
+        120,
+        248
+    ],
+    "SPONGE": [
+        132,
+        209,
+        243
+    ],
+    "SYRINGODIUM_ISOETIFOLIUM": [
+        102,
+        166,
+        235
+    ],
+    "THALASSODENDRON_CILIATUM": [
+        187,
+        137,
+        111
+    ],
+    "USELESS": [
+        134,
+        179,
+        105
+    ]
+}
