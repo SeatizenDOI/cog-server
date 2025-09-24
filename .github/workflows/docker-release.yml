@@ -22,7 +22,7 @@ jobs:
       run: |
         ssh -tt -o StrictHostKeyChecking=no debian@ifremer.re << EOF
           docker container stop cog-server || true && docker image rm seatizendoi/cog-server:latest || true && \
-          docker run -d --rm -v /home/debian/villien/tiles/:/app/tiles --name cog-server -p 5004:5004 seatizendoi/cog-server:latest > /dev/null 2>&1
+          docker run -d --rm -v /home/debian/villien/data/:/app/data --name cog-server -p 5004:5004 seatizendoi/cog-server:latest > /dev/null 2>&1
           exit
         EOF
       

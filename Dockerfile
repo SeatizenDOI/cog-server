@@ -17,7 +17,11 @@ RUN apt-get update && \
     uvicorn==0.35.0 \
     pyqtree==1.0.0 \
     pillow==11.3.0 \
-    rio-cogeo==5.4.2
+    pandas==2.3.2 \
+    scikit-learn==1.7.1 \
+    rio-cogeo==5.4.2 \
+    ipykernel==6.30.1 \
+    tqdm==4.67.1
 
 EXPOSE 5004
 

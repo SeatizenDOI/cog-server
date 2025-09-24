@@ -15,7 +15,7 @@ GLOBAL_DATA_PATH = Path("./data")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Auto-Discovery Multi-COG Tile Server")
+app = FastAPI(title="Auto-Discovery Multi-COG Tile Server", docs_url=None, redoc_url=None)
 
 # Add CORS middleware
 app.add_middleware(
@@ -58,7 +58,7 @@ async def serve_collection_tile(collection_name: str, year: str, z: int, x: int,
         ) 
         
     except Exception as e:
-        logger.error(f"Error serving tile {collection_name}/{z}/{x}/{y}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/{collection_name}/{year}/{specie}/{z}/{x}/{y}.png")
 async def serve_collection_tile(collection_name: str, year: str, specie: str, z: int, x: int, y: int) -> Response:
@@ -88,7 +88,7 @@ async def serve_collection_tile(collection_name: str, year: str, specie: str, z:
         ) 
         
     except Exception as e:
-        logger.error(f"Error serving tile {collection_name}/{z}/{x}/{y}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/depth")
@@ -108,7 +108,7 @@ async def get_depth(lon: float = Query(...), lat: float = Query(...), years: lis
             "depth": None if depth_value == None else float(depth_value)
         }
     except Exception as e:
-        logger.error(f"Get POint : {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/prediction")
@@ -127,7 +127,7 @@ async def get_prediction(lon: float = Query(...), lat: float = Query(...), years
             "pred": pred_value
         }
     except Exception as e:
-        logger.error(f"Get Point : {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/depthOrprediction")
@@ -153,7 +153,7 @@ async def get_prediction(lon: float = Query(...), lat: float = Query(...), layer
             "value": value
         }
     except Exception as e:
-        logger.error(f"Get Point : {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/layers")
@@ -168,11 +168,13 @@ async def get_layers():
                     "id": f"{type_path.name}_{year.name}",
                     "name": f"{ManagerType.get_displayable_name(type_path.name)} {year.name}",
                     "url": f"/{type_path.name}/{year.name}"+"/{z}/{x}/{y}.png",
-                    "attribution": ManagerType.get_attribution(type_path.name)
+                    "attribution": ManagerType.get_attribution(type_path.name),
+                    "description":  ManagerType.get_description(type_path.name)
                 })
     except Exception as e:
-        logger.error(f"Get path : {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
     return layers
+
 
 @app.get("/filters-asv")
 async def get_filters():
@@ -180,7 +182,7 @@ async def get_filters():
 
     filters = {
         "species": [{"name":s, "color": '#%02x%02x%02x' % tuple(asv_color.get(s, [127, 127, 127]))}  for s in general_manager.pred_asv_manager.species], 
-        "years": sorted([y.name for y in general_manager.pred_asv_manager.pred_data_path.iterdir() if y.is_dir()])
+        "years": sorted([int(y.name) for y in general_manager.pred_asv_manager.pred_data_path.iterdir() if y.is_dir()])
     }
 
     return filters
@@ -200,7 +202,8 @@ async def get_specific_layer(year: str, specie: str):
         "id": f"{ManagerType.PRED_ASV.value}_{year}_{specie}",
         "name": f"{ManagerType.get_displayable_name(ManagerType.PRED_ASV.value)} {year} {specie}",
         "url": f"/{ManagerType.PRED_ASV.value}/{year}/{specie}"+"/{z}/{x}/{y}.png",
-        "attribution": ManagerType.get_attribution(ManagerType.PRED_ASV.value)
+        "attribution": ManagerType.get_attribution(ManagerType.PRED_ASV.value),
+        "description":  ManagerType.get_description(ManagerType.PRED_ASV.value)
     }
 
     return layer

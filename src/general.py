@@ -28,7 +28,17 @@ class ManagerType(Enum):
         if type == ManagerType.ORTHO.value: return "Orthophoto"
         if type == ManagerType.IGN.value: return "IGN BDORTHO"
 
-        return "No found"
+        return "Not found"
+    
+    def get_description(type: str) -> str:
+
+        if type == ManagerType.BATHY.value: return "Bathymetry data acquire by ASV using single-beam echosounder."
+        if type == ManagerType.PRED_DRONE.value: return "Habitat map by drone orthophoto using a multilabel semantic segmentation model."
+        if type == ManagerType.PRED_ASV.value: return "Habitat map by ASV using a multilabel classifier model"
+        if type == ManagerType.ORTHO.value: return "Orthophoto using drone or ASV build by Structure from motion technique."
+        if type == ManagerType.IGN.value: return "Satellite data from IGN BD Ortho."
+
+        return "Not found"
 
 class GeneralManager:
 
