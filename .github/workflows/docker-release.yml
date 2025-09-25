@@ -20,9 +20,17 @@ jobs:
 
     - name: Deploy to OVH server
       run: |
-        ssh -tt -o StrictHostKeyChecking=no debian@ifremer.re << EOF
-          docker container stop cog-server || true && docker image rm seatizendoi/cog-server:latest || true && \
-          docker run -d --rm -v /home/debian/villien/data/:/app/data --name cog-server -p 5004:5004 seatizendoi/cog-server:latest > /dev/null 2>&1
-          exit
+        ssh -tt -o StrictHostKeyChecking=no debian@ifremer.re << 'EOF'
+          # Stop and remove the container if it exists
+          docker container stop cog-server || true
+          
+          # Remove the image if it exists
+          docker image rm seatizendoi/cog-server:latest || true
+          
+          # Run a new container
+          docker run -d --rm \
+            --name cog-server \
+            -v /home/debian/villien/data/:/app/data \
+            -p 5004:5004 \
+            seatizendoi/cog-server:latest > /dev/null 2>&1
         EOF
-      
