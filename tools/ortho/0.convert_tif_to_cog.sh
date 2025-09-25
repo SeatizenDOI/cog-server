@@ -4,7 +4,7 @@ source /home/bioeos/miniconda3/etc/profile.d/conda.sh
 conda activate cog_server_env
 
 ORTHO_COG_FOLDER=./data/unsorted_cogs
-RASTER_FOLDER=/home/bioeos/Documents/project_hub/ign-upscaling/data/ign/IGN_2017_974
+RASTER_FOLDER=/media/bioeos/E/drone/new_ortho_202508_2
 
 # rm -rf $ORTHO_COG_FOLDER
 mkdir -p $ORTHO_COG_FOLDER

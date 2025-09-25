@@ -41,6 +41,7 @@ docker build -f Dockerfile -t seatizendoi/cog-server:latest .
 Run command
 ```bash
 docker run --rm -v /home/bioeos/Documents/project_hub/cog-server/data/:/app/data --name cog-server -p 5004:5004 seatizendoi/cog-server:latest
+docker run --rm -v -d /home/debian/villien/data/:/app/data --name cog-server -p 5004:5004 seatizendoi/cog-server:latest
 
 ```
 

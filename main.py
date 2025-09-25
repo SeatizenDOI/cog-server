@@ -138,10 +138,10 @@ async def get_prediction(lon: float = Query(...), lat: float = Query(...), layer
         layer_type, value = "", None
         for layer_id in layers_id:
             if ManagerType.PRED_ASV.value in layer_id: continue
-            layer_type, layer_year = layer_id.split("_")
-            if layer_type == ManagerType.BATHY.value:
+            layer_year = layer_id.split("_")[-1]
+            if ManagerType.BATHY.value in layer_id:
                 value = general_manager.get_depth(lon, lat, layer_year)
-            elif layer_type == ManagerType.PRED_DRONE.value:
+            elif ManagerType.PRED_DRONE.value in layer_id:
                 value = general_manager.get_prediction(lon, lat, layer_year)
 
             if value != None: break
