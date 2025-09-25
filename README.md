@@ -71,7 +71,7 @@ To ensure a consistent environment for all users, this project uses a Conda envi
 * URL: https://cogserver.ifremer.re/ortho/2023/{z}/{x}/{y}.png?asv=true
 
 * Min Zoom level: 10
-* Max Zoom level: 26
+* Max Zoom level: 28
 * Tile resolution: 256*256
 
 * Name: Bathy Ifremer DOI
