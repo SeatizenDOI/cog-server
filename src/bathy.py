@@ -18,21 +18,16 @@ logger = logging.getLogger(__name__)
 class BathyCogYear(BaseManager):
 
     def __init__(self, bathy_cogs_path: Path) -> None:
+        super().__init__()
         self.bathy_cogs_path = bathy_cogs_path
         self.list_color_cogs, self.bathy_file_by_color = self.match_color_depth_file()
         
-        self._readers = self.load_readers(self.list_color_cogs)
         self._spindex = self.create_index(self.list_color_cogs)
   
 
     @property
     def spindex(self) -> pyqtree.Index:
         return self._spindex
-
-
-    @property
-    def readers(self) -> dict[Path, COGReader]:
-        return self._readers
 
 
     def match_color_depth_file(self) -> tuple[list, dict[Path, Path]]:

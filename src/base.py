@@ -2,6 +2,7 @@ import logging
 import pyqtree
 import numpy as np
 from pathlib import Path
+from functools import lru_cache
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from morecantile.commons import BoundingBox
@@ -23,7 +24,54 @@ class ParametersCOG:
     bb: BoundingBox
     with_asv: bool
 
+from collections import OrderedDict
+from threading import RLock
+
+class ReaderCache:
+    def __init__(self, maxsize=64):
+        self.maxsize = maxsize
+        self._cache = OrderedDict()
+        self._lock = RLock()
+
+    def get(self, path: Path) -> COGReader:
+        with self._lock:
+            reader = self._cache.get(path)
+            if reader is not None:
+                # Move to the end (mark as recently used)
+                self._cache.move_to_end(path)
+                return reader
+
+            # Not cached → open a new one
+            reader = COGReader(path)
+            self._cache[path] = reader
+
+            # Evict oldest if over capacity
+            if len(self._cache) > self.maxsize:
+                old_path, old_reader = self._cache.popitem(last=False)
+                try:
+                    old_reader.close()
+                except Exception as e:
+                    logger.warning(f"Failed to close COGReader for {old_path}: {e}")
+
+            return reader
+
+    def clear(self):
+        """Close all readers and empty the cache."""
+        with self._lock:
+            for path, reader in self._cache.items():
+                try:
+                    reader.close()
+                except Exception as e:
+                    logger.warning(f"Failed to close COGReader for {path}: {e}")
+            self._cache.clear()
+
+
 class BaseManager(ABC):
+
+    def __init__(self):
+        super().__init__()
+        self.reader_cache = ReaderCache(maxsize=32)
+
 
     @property
     @abstractmethod
@@ -31,13 +79,6 @@ class BaseManager(ABC):
         """Subclasses must define this attribute or property."""
         pass
         
-
-    @property
-    @abstractmethod
-    def readers(self) -> dict[Path, COGReader]:
-        """Subclasses must define this attribute or property."""
-        pass
-
 
     def create_index(self, list_rasters: list[Path]) -> pyqtree.Index:
         """This function create a quadtree index with all the cog raster."""
@@ -93,18 +134,6 @@ class BaseManager(ABC):
         )
 
 
-    def load_readers(self, list_cogs_path: list[Path]) -> dict[Path, COGReader]:
-        """ Create a dict of readers map by the path of the cog."""
-        readers = {}
-        for file in list_cogs_path:
-            try:
-                reader = COGReader(file)
-                readers[file.name] = reader
-            except Exception as e:
-                logger.warning(f"Failed to initialize COG reader for {file}: {e}")
-        return readers
-
-
     def get_tile(self, p: ParametersCOG) -> ImageData | None:
         """ Get the tile at the given coordinate. """
         list_cogs_intersect = sorted(self.spindex.intersect((
@@ -114,8 +143,11 @@ class BaseManager(ABC):
         if len(list_cogs_intersect) == 0:
             return None
 
-        tiles = [self.readers.get(file.name).tile(p.x, p.y, p.z, indexes=(1,2,3,4)) for file in list_cogs_intersect]
-        
+        tiles = []
+        for file in list_cogs_intersect:
+            reader = self.reader_cache.get(file)
+            tiles.append(reader.tile(p.x, p.y, p.z, indexes=(1, 2, 3, 4)))
+
         tile = tiles[0] if len(tiles) == 1 else self.get_merge_tiles(tiles)
 
         return tile

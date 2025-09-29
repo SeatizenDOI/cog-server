@@ -16,21 +16,16 @@ logger = logging.getLogger(__name__)
 class PredASVCogSpecie(BaseManager):
 
     def __init__(self, pred_cogs_path: Path, specie: str) -> None:
+        super().__init__()
         self.pred_cogs_path = pred_cogs_path
         self.list_pred_cogs = [raster for raster in self.pred_cogs_path.iterdir() if specie in raster.name]
-
-        self._readers = self.load_readers(self.list_pred_cogs)
+        
         self._spindex = self.create_index(self.list_pred_cogs)
   
 
     @property
     def spindex(self) -> pyqtree.Index:
         return self._spindex
-
-
-    @property
-    def readers(self) -> dict[Path, COGReader]:
-        return self._readers
 
 
     def match_color_pred_file(self) -> tuple[list, dict[Path, Path]]:
