@@ -2,7 +2,6 @@ import logging
 import pyqtree
 import numpy as np
 from pathlib import Path
-from functools import lru_cache
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from morecantile.commons import BoundingBox
@@ -28,7 +27,7 @@ from collections import OrderedDict
 from threading import RLock
 
 class ReaderCache:
-    def __init__(self, maxsize=64):
+    def __init__(self, maxsize=20):
         self.maxsize = maxsize
         self._cache = OrderedDict()
         self._lock = RLock()
