@@ -90,46 +90,6 @@ async def serve_collection_tile(collection_name: str, year: str, specie: str, z:
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
-@app.get("/depth")
-async def get_depth(lon: float = Query(...), lat: float = Query(...), years: list[str] = Query(...)) -> dict:
-    """Return depth at clicked point."""
-
-    try:
-        depth_value = None
-        for year in years:
-            depth_value = general_manager.get_depth(lon, lat, year)
-            print(year, depth_value)
-            if depth_value != None: break
-
-        return {
-            "lon": lon, 
-            "lat": lat, 
-            "depth": None if depth_value == None else float(depth_value)
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-
-@app.get("/prediction")
-async def get_prediction(lon: float = Query(...), lat: float = Query(...), years: list[str] = Query(...)) -> dict:
-    """Return prediction at clicked point."""
-
-    try:
-        pred_value = None
-        for year in years:
-            pred_value = general_manager.get_prediction(lon, lat, year)
-            if pred_value != None: break
-        
-        return {
-            "lon": lon, 
-            "lat": lat, 
-            "pred": pred_value
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-
 @app.get("/depthOrprediction")
 async def get_prediction(lon: float = Query(...), lat: float = Query(...), layers_id: list[str] = Query(...)) -> dict:
     """Return prediction or depth at clicked point."""
@@ -145,6 +105,8 @@ async def get_prediction(lon: float = Query(...), lat: float = Query(...), layer
                 value = general_manager.get_depth(lon, lat, layer_year)
             elif ManagerType.PRED_DRONE.value in layer_id:
                 value = general_manager.get_prediction(lon, lat, layer_year)
+            elif ManagerType.PRED_IGN.value in layer_id:
+                value = general_manager.get_prediction_ign(lon, lat, layer_year)
 
             if value != None: break
 

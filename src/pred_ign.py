@@ -11,17 +11,17 @@ from .base import BaseManager
 
 LABEL_TEXT_MATCHING = {
     "1": "Acropora Branching", 
-    "2": "Acropora Tabular",
-    "3": "Non-acropora Massive",
-    "4": "Other Corals",
-    "5": "Sand",
+    "2": "Non-acropora Massive",
+    "3": "Other Corals",
+    "4": "Sand",
+    "5": "Syringodium",
 }
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class PredDroneCogYear(BaseManager):
+class PredIGNCogYear(BaseManager):
 
     def __init__(self, pred_cogs_path: Path) -> None:
         super().__init__()
@@ -79,20 +79,20 @@ class PredDroneCogYear(BaseManager):
 
 
 
-class PredDroneManager:
+class PredIGNManager:
 
     def __init__(self, pred_data_path: Path):
         self.pred_data_path = pred_data_path
         self.pred_cog_by_year = self.load_pred_cog()
 
 
-    def load_pred_cog(self) -> dict[str, PredDroneCogYear]:
+    def load_pred_cog(self) -> dict[str, PredIGNCogYear]:
 
         if not self.pred_data_path.exists():
             raise FileNotFoundError("Cannot access to pred data, folder not found")
 
-        pred_cog_by_year = {pyp.name:PredDroneCogYear(pyp) for pyp in self.pred_data_path.iterdir()}
-        
+        pred_cog_by_year = {pyp.name:PredIGNCogYear(pyp) for pyp in self.pred_data_path.iterdir()}
+
         return pred_cog_by_year
     
 
