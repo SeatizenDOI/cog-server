@@ -4,7 +4,6 @@ utils
 LICENCE
 *.md
 data
-tools
 .git
 assets
 .github
