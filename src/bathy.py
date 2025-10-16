@@ -79,6 +79,17 @@ class BathyManager:
         self.bathy_cog_by_year = self.load_bathy_cog()
 
 
+    def get_legend(self) -> list:
+        """ Return the current legend. """
+        color_dict = []
+        with open("tools/bathy/color.txt", "r") as file:
+            for row in file:
+                prof, r, g, b, a = [b for b in row.replace("\n", "").split(" ") if b != ""]
+                if prof in ['-9999', 'nan']: continue
+                color_dict.append({'depth': float(prof), 'color': f"rgba({int(r)}, {int(g)}, {int(b)}, {int(a)})"})
+        return {"title": "Depth (m)", "legend": color_dict, "description": "Click on map to get local depth."}
+
+
     def load_bathy_cog(self) -> dict[str, BathyCogYear]:
 
         if not self.bathy_data_path.exists():

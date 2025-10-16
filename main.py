@@ -171,3 +171,15 @@ async def get_specific_layer(year: str, specie: str):
     }
 
     return layer
+
+@app.get("/get-all-legend")
+async def get_legend():
+
+    legends = [
+        general_manager.bathy_manager.get_legend(),
+        general_manager.pred_drone_manager.get_legend(),
+        general_manager.pred_ign_manager.get_legend()
+    ]
+
+    return legends
+pass

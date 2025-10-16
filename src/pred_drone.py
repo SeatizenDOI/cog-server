@@ -86,6 +86,17 @@ class PredDroneManager:
         self.pred_cog_by_year = self.load_pred_cog()
 
 
+    def get_legend(self) -> list:
+        """ Return the current legend. """
+        color_dict = {}
+        with open("tools/pred_drone/color.txt", "r") as file:
+            for row in file:
+                prof, r, g, b, a = [b for b in row.replace("\n", "").split(" ") if b != ""]
+                if prof in ['-9999', 'nan', '0']: continue
+                color_dict[LABEL_TEXT_MATCHING.get(prof, prof)] = f"rgba({int(r)}, {int(g)}, {int(b)}, {int(a)})"
+        return {"title": "Habitat Prediction by drone", "legend": color_dict, "description": "Click on map to get local habitat prediction."}
+
+
     def load_pred_cog(self) -> dict[str, PredDroneCogYear]:
 
         if not self.pred_data_path.exists():
