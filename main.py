@@ -104,7 +104,7 @@ async def get_prediction(lon: float = Query(...), lat: float = Query(...), layer
             if ManagerType.BATHY.value in layer_id:
                 value = general_manager.get_depth(lon, lat, layer_year)
             elif ManagerType.PRED_DRONE.value in layer_id:
-                value = general_manager.get_prediction(lon, lat, layer_year)
+                value = general_manager.get_prediction_drone(lon, lat, layer_year)
             elif ManagerType.PRED_IGN.value in layer_id:
                 value = general_manager.get_prediction_ign(lon, lat, layer_year)
 

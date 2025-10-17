@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "langue_sable",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 55.229483338381506, -21.090720064936239 ], [ 55.229487615705558, -21.09151423080613 ], [ 55.228058989474555, -21.091550147755175 ], [ 55.228362679481741, -21.090787908417607 ], [ 55.229483338381506, -21.090720064936239 ] ] ] ] } }
+]
+}
